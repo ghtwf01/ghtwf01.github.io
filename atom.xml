@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2022-07-25T15:58:13.046Z</updated>
+  <updated>2022-07-26T14:37:57.018Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,6 +15,26 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>CVE-2021-21975&amp;CVE-2021-21983 VMware vRealize SSRF、任意文件上传漏洞分析</title>
+    <link href="http://example.com/2022/07/26/CVE-2021-21975&amp;CVE-2021-21983%20VMware%20vRealize%20SSRF%E3%80%81%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/"/>
+    <id>http://example.com/2022/07/26/CVE-2021-21975&amp;CVE-2021-21983%20VMware%20vRealize%20SSRF%E3%80%81%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</id>
+    <published>2022-07-26T14:29:01.841Z</published>
+    <updated>2022-07-26T14:37:57.018Z</updated>
+    
+    <content type="html"><![CDATA[<p>该文章本人首发在360 cert官网：<a href="https://cert.360.cn/report/detail?id=1dfca2f7080257c33272167afbf4e276">https://cert.360.cn/report/detail?id=1dfca2f7080257c33272167afbf4e276</a></p><h1 id="漏洞概述"><a href="#漏洞概述" class="headerlink" title="漏洞概述"></a>漏洞概述</h1><p>VMware vRealize Operations 可在由 AI 提供支持的统一平台中针对私有云、混合云和多云环境提供自动配置 IT 运维管理套件。</p><p>本次安全更新修复了一处服务端请求伪造漏洞，一处任意文件上传漏洞。未经身份验证的攻击者通过访问特定的api传入恶意数据，最终在目标服务器上触发漏洞。</p><h1 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h1><h2 id="CVE-2021-21975"><a href="#CVE-2021-21975" class="headerlink" title="CVE-2021-21975"></a>CVE-2021-21975</h2><p>位于<code>casa/WEB-INF/classes/com/vmware/ops/casa/api/ClusterDefinitionController.class</code>有一个路由<code>/nodes/thumbprints</code></p><p><img src="https://tva1.sinaimg.cn/large/7fa27158ly1h4kpaim6vcj21l609uwkg.jpg" alt="image.png"></p><p>这里接收POST传入的值作为<code>address</code>传入<code>getNodesThumbprints</code>方法，跟进ClusterDefinitionService#getNodesThumbprints</p><p><img src="https://tva1.sinaimg.cn/large/7fa27158ly1h4kpb0kby2j225g0quh16.jpg" alt="image.png"></p><p>这里实例化了一个<code>HttpMapFunction</code>类并调用了<code>execute</code>方法，可以看到返回的结果保存在response中，后面就是对返回结果的处理，从变量名和后面操作的行为就可以猜测execute方法里面就是发出请求也就是造成ssrf的地方，跟进看一看</p><p><img src="https://tva1.sinaimg.cn/large/7fa27158ly1h4kpbv9kzlj225212wnji.jpg" alt="image.png"></p><p>这里的hosts也就是我们传入的address转为数组的形式，接着将hosts赋值给var4，然后进入for循环遍历host通过<code>HttpTask.createInstance</code>创建任务实例，跟进HttpTask#createInstance</p><p><img src="https://tva1.sinaimg.cn/large/7fa27158ly1h4kpcgi9mcj22080hotn6.jpg" alt="image.png"></p><p>这里的op从实例化HttpMapFunction那儿可以知道值为<code>RequestMethod.GET</code>，所以这里返回了一个发送GET请求的任务<code>HttpGetTask</code>，回到<code>execute</code>方法中，将得到的任务<code>task</code>放入<code>tasks</code>中，最后通过<code>invokeAll</code>开始多线程执行。</p><h3 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h3><p><img src="https://tva1.sinaimg.cn/large/7fa27158ly1h4kpd85msej21hc0fg1ef.jpg" alt="image.png"></p><p>注意这里<code>Content-Type</code>要为<code>application/json</code></p><h2 id="CVE-2021-21983"><a href="#CVE-2021-21983" class="headerlink" title="CVE-2021-21983"></a>CVE-2021-21983</h2><p>位于<code>casa/classes/com/vmware/vcops/casa/appconfig/CertificateController.class</code>有一个路由</p><p><img src="https://tva1.sinaimg.cn/large/7fa27158ly1h4kpdunv36j21o20lgtkm.jpg" alt="image.png"></p><p>这里接收了两个post参数name和file，然后跟进CertificateService#handleCertificateFile</p><p><img src="https://tva1.sinaimg.cn/large/7fa27158ly1h4kpe7qnptj21kq0bq7ag.jpg" alt="image.png"></p><p>这里创建了一个File对象，然后直接使用transferTo函数上传文件，两个参数都是可控的所以就造成了任意文件上传漏洞。</p><h3 id="漏洞利用-1"><a href="#漏洞利用-1" class="headerlink" title="漏洞利用"></a>漏洞利用</h3><p><img src="https://tva1.sinaimg.cn/large/7fa27158ly1h4kpelu8yxj21c604mdlg.jpg" alt="image.png"></p><h1 id="组合利用-x3D-RCE"><a href="#组合利用-x3D-RCE" class="headerlink" title="组合利用&#x3D;RCE"></a>组合利用&#x3D;RCE</h1><p>思路是ssrf获取Authorization然后配合文件上传漏洞getshell。</p><p>复现ssrf的时候已经接收到了Authorization(8.3之前的版本会有，不包括8.3)，然后就利用文件上传漏洞写webshell。</p><p><img src="https://tva1.sinaimg.cn/large/7fa27158ly1h4kpf4vpgkj20wk09mwlc.jpg" alt="image.png"></p><h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://www.vmware.com/security/advisories/VMSA-2021-0004.html">VMSA-2021-0004</a></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;该文章本人首发在360 cert官网：&lt;a href=&quot;https://cert.360.cn/report/detail?id=1dfca2f7080257c33272167afbf4e276&quot;&gt;https://cert.360.cn/report/detail?id=1</summary>
+      
+    
+    
+    
+    
+  </entry>
   
   <entry>
     <title>CVE-2021-21985 VMware vCenter Server远程代码执行漏洞分析</title>
