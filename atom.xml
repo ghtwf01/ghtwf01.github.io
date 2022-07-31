@@ -6,7 +6,7 @@
   <link href="https://www.ghtwf01.cn/atom.xml" rel="self"/>
   
   <link href="https://www.ghtwf01.cn/"/>
-  <updated>2022-07-29T10:30:12.804Z</updated>
+  <updated>2022-07-29T08:58:24.698Z</updated>
   <id>https://www.ghtwf01.cn/</id>
   
   <author>
@@ -15,19 +15,6 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
-  
-  <entry>
-    <title></title>
-    <link href="https://www.ghtwf01.cn/2022/07/29/Hadoop%20Yarn%20REST%20API%E6%9C%AA%E6%8E%88%E6%9D%83%E6%BC%8F%E6%B4%9E/"/>
-    <id>https://www.ghtwf01.cn/2022/07/29/Hadoop%20Yarn%20REST%20API%E6%9C%AA%E6%8E%88%E6%9D%83%E6%BC%8F%E6%B4%9E/</id>
-    <published>2022-07-29T10:30:12.804Z</published>
-    <updated>2022-07-29T10:30:12.804Z</updated>
-    
-    
-    
-    
-    
-  </entry>
   
   <entry>
     <title>Apache Flink Dashboard未授权访问导致任意Jar包上传漏洞</title>
